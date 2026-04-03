@@ -1,15 +1,32 @@
 export interface Product {
     id: string
     name: string
+    model?: string
     brand: string
-    category: 'car' | 'truck' | 'motorcycle' | 'solar' | 'industrial'
-    voltage: 6 | 12 | 24 | 48
-    capacity: number
     price: number
     stock: number
+
     imageUrl?: string
     publicId?: string
     description?: string
+
+    specifications: {
+        voltage: 6 | 12 | 24 | 48
+        batteryType?: string
+        platesPerCell?: number
+        capacity20hr?: number
+        capacity5hr?: number
+        terminalType?: string
+        polarity?: 'L' | 'R'
+        weightKg?: number
+        dimensions?: {
+            length?: number
+            width?: number
+            height?: number
+            containerHeight?: number
+        }
+    }
+
     createdAt: Date
     updatedAt: Date
     createdBy: string

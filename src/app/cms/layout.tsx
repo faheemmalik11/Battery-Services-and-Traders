@@ -1,7 +1,18 @@
+'use client'
+
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { useAuth } from "@/features/auth/context/AuthContext";
+import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
 
 export default function CmsLayout({ children }: { children: ReactNode }) {
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+  };
+
   return (
     <div className="min-h-screen bg-muted/20">
       <div className="flex min-h-screen">
@@ -37,6 +48,13 @@ export default function CmsLayout({ children }: { children: ReactNode }) {
               >
                 Back to site
               </Link>
+              <button
+                onClick={handleLogout}
+                className="mt-1 flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-muted-foreground hover:bg-muted hover:text-foreground"
+              >
+                <LogOut className="h-4 w-4" />
+                Logout
+              </button>
             </div>
           </nav>
         </aside>
@@ -54,6 +72,12 @@ export default function CmsLayout({ children }: { children: ReactNode }) {
                 <Link href="/" className="text-muted-foreground hover:underline">
                   Site
                 </Link>
+                <button
+                  onClick={handleLogout}
+                  className="rounded-md bg-destructive px-3 py-1 text-xs text-white hover:bg-destructive/90"
+                >
+                  Logout
+                </button>
               </nav>
             </div>
           </header>

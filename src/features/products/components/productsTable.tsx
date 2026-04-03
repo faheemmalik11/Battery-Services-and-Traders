@@ -45,6 +45,7 @@ export function ProductTable({ products, onDelete, isDeleting }: ProductTablePro
                     <TableRow>
                         <TableHead>Image</TableHead>
                         <TableHead>Name</TableHead>
+                        <TableHead>Model</TableHead>
                         <TableHead>Brand</TableHead>
                         <TableHead>Price</TableHead>
                         <TableHead>Stock</TableHead>
@@ -66,6 +67,9 @@ export function ProductTable({ products, onDelete, isDeleting }: ProductTablePro
                                 )}
                             </TableCell>
                             <TableCell className="font-medium">{product.name}</TableCell>
+                            <TableCell className="text-muted-foreground">
+                                {product.model ?? '—'}
+                            </TableCell>
                             <TableCell>{product.brand}</TableCell>
                             <TableCell>${product.price.toLocaleString()}</TableCell>
                             <TableCell>{getStockBadge(product.stock)}</TableCell>

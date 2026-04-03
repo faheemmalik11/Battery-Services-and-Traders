@@ -12,10 +12,15 @@ export default function PublicProductsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
-  const filteredProducts = products?.filter(product =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.brand.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const q = searchQuery.toLowerCase()
+  const filteredProducts = products?.filter((product) => {
+    const model = product.model?.toLowerCase() ?? ''
+    return (
+      product.name.toLowerCase().includes(q) ||
+      product.brand.toLowerCase().includes(q) ||
+      model.includes(q)
+    )
+  })
 
   if (isLoading) {
     return (

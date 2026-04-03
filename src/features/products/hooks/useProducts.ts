@@ -39,6 +39,33 @@ function optimisticProduct(
     }
 }
 
+function mergeSpecifications(
+    base: Product['specifications'],
+    patch: NonNullable<UpdateProductInput['specifications']>
+): Product['specifications'] {
+    return {
+        ...base,
+        ...patch,
+        dimensions:
+            patch.dimensions !== undefined
+                ? { ...base.dimensions, ...patch.dimensions }
+                : base.dimensions,
+    }
+}
+
+function applyProductPatch(product: Product, data: UpdateProductInput, now: Date): Product {
+    const { specifications: specPatch, ...rest } = data
+    return {
+        ...product,
+        ...rest,
+        specifications:
+            specPatch !== undefined
+                ? mergeSpecifications(product.specifications, specPatch)
+                : product.specifications,
+        updatedAt: now,
+    }
+}
+
 // Get all products
 export function useProducts() {
     return useQuery({
@@ -128,12 +155,12 @@ export function useUpdateProduct() {
             queryClient.setQueryData<Product[]>(productKeys.list(), (old) => {
                 if (!old) return old
                 return old.map((p) =>
-                    p.id === id ? { ...p, ...data, updatedAt: now } : p
+                    p.id === id ? applyProductPatch(p, data, now) : p
                 )
             })
             queryClient.setQueryData<Product | null>(productKeys.detail(id), (old) => {
                 if (!old) return old
-                return { ...old, ...data, updatedAt: now }
+                return applyProductPatch(old, data, now)
             })
 
             return { previousList, previousDetail }

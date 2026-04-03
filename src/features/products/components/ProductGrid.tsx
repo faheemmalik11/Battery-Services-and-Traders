@@ -81,7 +81,10 @@ export function ProductGrid({ products, viewMode }: ProductGridProps) {
                         </CardContent>
                         <CardFooter className="p-4 pt-0">
                             <div className="text-xs text-muted-foreground">
-                                {product.capacity} Ah • {product.voltage}V
+                                {product.specifications.capacity20hr != null
+                                    ? `${product.specifications.capacity20hr} Ah`
+                                    : '—'}{' '}
+                                • {product.specifications.voltage}V
                             </div>
                         </CardFooter>
                     </Card>
