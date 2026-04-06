@@ -2,16 +2,25 @@
 
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useAuth } from "@/features/auth/context/AuthContext";
-import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 
 export default function CmsLayout({ children }: { children: ReactNode }) {
   const { logout } = useAuth();
+  const pathname = usePathname();
+
+  // Check if we're on the login page
+  const isLoginPage = pathname === '/cms/login';
 
   const handleLogout = async () => {
     await logout();
   };
+
+  // If on login page, render only children without sidebar
+  if (isLoginPage) {
+    return <>{children}</>;
+  }
 
   return (
     <div className="min-h-screen bg-muted/20">

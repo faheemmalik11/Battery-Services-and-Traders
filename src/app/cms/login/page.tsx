@@ -1,17 +1,24 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useAuth } from '@/features/auth/context/AuthContext'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 
-export default function CMSLoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const { signIn, signInWithGoogle, user, loading } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    const errorParam = searchParams.get('error')
+    if (errorParam === 'unauthorized') {
+      setError('Access denied. You are not authorized to access this system.')
+    }
+  }, [searchParams])
 
   useEffect(() => {
     if (user && !loading) {
@@ -24,8 +31,8 @@ export default function CMSLoginPage() {
     setError('')
     try {
       await signIn(email, password)
-    } catch (err) {
-      setError('Invalid email or password')
+    } catch (err: any) {
+      setError(err.message || 'Invalid email or password')
     }
   }
 
@@ -33,8 +40,8 @@ export default function CMSLoginPage() {
     setError('')
     try {
       await signInWithGoogle()
-    } catch (err) {
-      setError('Google sign in failed')
+    } catch (err: any) {
+      setError(err.message || 'Google sign in failed')
     }
   }
 
@@ -139,9 +146,17 @@ export default function CMSLoginPage() {
         </Button>
 
         <p className="text-center text-xs text-muted-foreground">
-          Use your admin credentials to access the CMS
+          Only authorized personnel can access this system
         </p>
       </div>
     </div>
+  )
+}
+
+export default function CMSLoginPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginForm />
+    </Suspense>
   )
 }
