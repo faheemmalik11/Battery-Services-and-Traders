@@ -3,21 +3,27 @@
 import { useRouter } from 'next/navigation'
 import { useCreateProduct } from '@/features/products/hooks/useProducts'
 import { ProductForm } from '@/features/products/components/ProductForm'
-import { parseProductFormData } from '@/features/products/lib/parseProductForm'
 import { toast } from 'sonner'
 
 export default function NewProductPage() {
   const router = useRouter()
   const createProduct = useCreateProduct()
 
-  const handleSubmit = async (formData: FormData, imageFile?: File) => {
+  const handleSubmit = async (
+    data: any, // CreateProductInput
+    newImageFiles: File[],
+    removedPublicIds: string[]
+  ) => {
     try {
-      const data = parseProductFormData(formData)
-      await createProduct.mutateAsync({ data, imageFile })
+      await createProduct.mutateAsync({
+        data,
+        imageFiles: newImageFiles
+      })
       toast.success('Product created successfully')
       router.push('/cms/products')
       router.refresh()
-    } catch {
+    } catch (error) {
+      console.error('Create error:', error)
       toast.error('Failed to create product')
     }
   }

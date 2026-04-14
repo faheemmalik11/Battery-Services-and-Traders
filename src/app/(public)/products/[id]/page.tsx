@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { useParams } from 'next/navigation'
 import { useProduct } from '@/features/products/hooks/useProducts'
 import { Button } from '@/components/ui/button'
@@ -27,6 +28,12 @@ export default function PublicProductDetailPage() {
   const params = useParams()
   const id = params.id as string
   const { data: product, isLoading, error } = useProduct(id)
+  const [selectedImage, setSelectedImage] = useState<string>('')
+
+  // Set the first image when product loads
+  if (product && !selectedImage && product.images?.[0]) {
+    setSelectedImage(product.images[0])
+  }
 
   if (isLoading) {
     return (
@@ -57,8 +64,7 @@ export default function PublicProductDetailPage() {
     return <Badge variant="secondary">In Stock</Badge>
   }
 
-  const s = product.specifications
-  const d = s.dimensions
+  const images = product.images || []
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -71,33 +77,61 @@ export default function PublicProductDetailPage() {
       </Link>
 
       <div className="mt-6 grid gap-8 md:grid-cols-2">
-        <Card>
-          <CardContent className="p-6">
-            {product.imageUrl ? (
-              <img
-                src={product.imageUrl}
-                alt={product.name}
-                className="w-full rounded-lg object-cover"
-              />
-            ) : (
-              <div className="flex h-96 items-center justify-center rounded-lg bg-muted">
-                <p className="text-muted-foreground">No image available</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        {/* Left Column - Images */}
+        <div className="space-y-4">
+          {/* Main Image */}
+          <Card>
+            <CardContent className="p-6">
+              {selectedImage ? (
+                <img
+                  src={selectedImage}
+                  alt={product.name}
+                  className="w-full rounded-lg object-cover"
+                />
+              ) : (
+                <div className="flex h-96 items-center justify-center rounded-lg bg-muted">
+                  <p className="text-muted-foreground">No image available</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
+          {/* Thumbnail Grid */}
+          {images.length > 1 && (
+            <div className="grid grid-cols-5 gap-2">
+              {images.map((image, index) => (
+                <button
+                  key={index}
+                  onClick={() => setSelectedImage(image)}
+                  className={`relative overflow-hidden rounded-lg border-2 transition-all hover:opacity-80 ${selectedImage === image
+                    ? 'border-primary ring-2 ring-primary/20'
+                    : 'border-border'
+                    }`}
+                >
+                  <img
+                    src={image}
+                    alt={`${product.name} - ${index + 1}`}
+                    className="h-20 w-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Right Column - Details */}
         <div className="space-y-6">
           <div>
             <h1 className="text-3xl font-bold">{product.name}</h1>
             <p className="mt-1 text-lg text-muted-foreground">
               {product.brand}
               {product.model ? ` · ${product.model}` : ''}
+              {product.variant ? ` (${product.variant})` : ''}
             </p>
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="text-3xl font-bold">${product.price.toLocaleString()}</div>
+            <div className="text-3xl font-bold">Rs. {product.price.toLocaleString()}</div>
             <div>{getStockBadge(product.stock)}</div>
           </div>
 
@@ -106,38 +140,30 @@ export default function PublicProductDetailPage() {
               <CardTitle>Specifications</CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-2 gap-4">
-              {specRow('Battery type', s.batteryType)}
-              {specRow('Plates per cell', s.platesPerCell)}
-              {specRow('Voltage', `${s.voltage}V`)}
-              {specRow(
-                'Capacity @ 20hr',
-                s.capacity20hr != null ? `${s.capacity20hr} Ah` : undefined
-              )}
-              {specRow(
-                'Capacity @ 5hr',
-                s.capacity5hr != null ? `${s.capacity5hr} Ah` : undefined
-              )}
-              {specRow('Terminal type', s.terminalType)}
-              {specRow('Polarity', s.polarity)}
-              {specRow('Weight', s.weightKg != null ? `${s.weightKg} kg` : undefined)}
-              {(d?.length != null ||
-                d?.width != null ||
-                d?.height != null ||
-                d?.containerHeight != null) && (
-                <div className="col-span-2">
-                  <p className="text-sm text-muted-foreground">Dimensions (mm)</p>
-                  <p className="font-medium">
-                    {[
-                      d?.length != null ? `L ${d.length}` : null,
-                      d?.width != null ? `W ${d.width}` : null,
-                      d?.height != null ? `H ${d.height}` : null,
-                      d?.containerHeight != null ? `Container ${d.containerHeight}` : null,
-                    ]
-                      .filter(Boolean)
-                      .join(' · ')}
-                  </p>
-                </div>
-              )}
+              {specRow('Ampere per hour', product.amperePerHour != null ? `${product.amperePerHour} Ah` : undefined)}
+              {specRow('Cold cranking amperes', product.coldCrankingAmperes != null ? `${product.coldCrankingAmperes} CCA` : undefined)}
+              {specRow('Reserve capacity', product.reserveCapacity != null ? `${product.reserveCapacity} min` : undefined)}
+              {specRow('Warranty', product.warranty != null ? `${product.warranty} months` : undefined)}
+              {specRow('Terminal type', product.terminalType)}
+              {(product.dimensions?.length != null ||
+                product.dimensions?.width != null ||
+                product.dimensions?.height != null ||
+                product.dimensions?.thickness != null) && (
+                  <div className="col-span-2">
+                    <p className="text-sm text-muted-foreground">Dimensions (mm)</p>
+                    <p className="font-medium">
+                      {[
+                        product.dimensions?.length != null ? `L ${product.dimensions.length}` : null,
+                        product.dimensions?.width != null ? `W ${product.dimensions.width}` : null,
+                        product.dimensions?.height != null ? `H ${product.dimensions.height}` : null,
+                        product.dimensions?.thickness != null ? `Thickness ${product.dimensions.thickness}` : null,
+                      ]
+                        .filter(Boolean)
+                        .join(' · ')}
+                    </p>
+                  </div>
+                )}
+              {specRow('Weight', product.dimensions?.weight != null ? `${product.dimensions.weight} kg` : undefined)}
             </CardContent>
           </Card>
 

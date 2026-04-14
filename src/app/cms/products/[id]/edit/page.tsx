@@ -3,7 +3,6 @@
 import { useRouter, useParams } from 'next/navigation'
 import { useProduct, useUpdateProduct } from '@/features/products/hooks/useProducts'
 import { ProductForm } from '@/features/products/components/ProductForm'
-import { parseProductFormData } from '@/features/products/lib/parseProductForm'
 import { toast } from 'sonner'
 
 export default function EditProductPage() {
@@ -13,21 +12,25 @@ export default function EditProductPage() {
   const { data: product, isLoading: isLoadingProduct } = useProduct(id)
   const updateProduct = useUpdateProduct()
 
-  const handleSubmit = async (formData: FormData, imageFile?: File) => {
+  const handleSubmit = async (
+    data: any,
+    newImageFiles: File[],
+    removedPublicIds: string[]
+  ) => {
     if (!product) return
 
     try {
-      const data = parseProductFormData(formData)
       await updateProduct.mutateAsync({
         id,
         data,
-        newImageFile: imageFile,
-        oldPublicId: product.publicId,
+        newImageFiles,
+        removedPublicIds,
       })
       toast.success('Product updated successfully')
       router.push('/cms/products')
       router.refresh()
-    } catch {
+    } catch (error) {
+      console.error('Update error:', error)
       toast.error('Failed to update product')
     }
   }

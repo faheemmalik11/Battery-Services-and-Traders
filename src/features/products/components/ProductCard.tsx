@@ -7,14 +7,15 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
     const isOutOfStock = product.stock === 0
+    const primaryImage = product.images?.[0]
 
     return (
         <div className={`group relative flex flex-col overflow-hidden rounded-xl border bg-card transition-shadow hover:shadow-md ${isOutOfStock ? 'opacity-60' : ''}`}>
             <Link href={`/products/${product.id}`} className="flex flex-col flex-1">
                 <div className="aspect-square overflow-hidden bg-muted">
-                    {product.imageUrl ? (
+                    {primaryImage ? (
                         <img
-                            src={product.imageUrl}
+                            src={primaryImage}
                             alt={product.name}
                             className="h-full w-full transition-transform duration-300 group-hover:scale-105"
                         />

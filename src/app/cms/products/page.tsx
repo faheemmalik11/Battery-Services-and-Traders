@@ -51,7 +51,7 @@ export default function CMSProductsPage() {
       ) : (
         <ProductTable
           products={products || []}
-          onDelete={(id, publicId) => deleteProduct.mutate({ id, publicId })}
+          onDelete={(id) => deleteProduct.mutate({ id })}
           isDeleting={deleteProduct.isPending}
         />
       )}

@@ -32,36 +32,17 @@ function optimisticProduct(
     return {
         id,
         ...data,
-        imageUrl,
+        images: imageUrl ? [imageUrl] : (data.images || []),
         createdAt: now,
         updatedAt: now,
         createdBy: '__optimistic__',
     }
 }
 
-function mergeSpecifications(
-    base: Product['specifications'],
-    patch: NonNullable<UpdateProductInput['specifications']>
-): Product['specifications'] {
-    return {
-        ...base,
-        ...patch,
-        dimensions:
-            patch.dimensions !== undefined
-                ? { ...base.dimensions, ...patch.dimensions }
-                : base.dimensions,
-    }
-}
-
 function applyProductPatch(product: Product, data: UpdateProductInput, now: Date): Product {
-    const { specifications: specPatch, ...rest } = data
     return {
         ...product,
-        ...rest,
-        specifications:
-            specPatch !== undefined
-                ? mergeSpecifications(product.specifications, specPatch)
-                : product.specifications,
+        ...data,
         updatedAt: now,
     }
 }
@@ -88,16 +69,16 @@ export function useCreateProduct() {
     const queryClient = useQueryClient()
 
     return useMutation({
-        mutationFn: ({ data, imageFile }: { data: CreateProductInput; imageFile?: File }) =>
-            createProduct(data, imageFile),
-        onMutate: async ({ data, imageFile }) => {
+        mutationFn: ({ data, imageFiles }: { data: CreateProductInput; imageFiles?: File[] }) =>
+            createProduct(data, imageFiles),
+        onMutate: async ({ data, imageFiles }) => {
             await queryClient.cancelQueries({ queryKey: productKeys.lists() })
             const previousList = queryClient.getQueryData<Product[]>(productKeys.list())
             const optimisticId = newOptimisticId()
             const next = optimisticProduct(
                 optimisticId,
                 data,
-                imageFile ? undefined : data.imageUrl
+                data.images?.[0] // First image for preview
             )
 
             queryClient.setQueryData<Product[]>(productKeys.list(), (old) =>
@@ -134,14 +115,14 @@ export function useUpdateProduct() {
         mutationFn: ({
             id,
             data,
-            newImageFile,
-            oldPublicId,
+            newImageFiles,
+            removedPublicIds,
         }: {
             id: string
             data: UpdateProductInput
-            newImageFile?: File
-            oldPublicId?: string
-        }) => updateProduct(id, data, { newImageFile, oldPublicId }),
+            newImageFiles?: File[]
+            removedPublicIds?: string[]
+        }) => updateProduct(id, data, { newImageFiles, removedPublicIds }),
         onMutate: async ({ id, data }) => {
             await queryClient.cancelQueries({ queryKey: productKeys.lists() })
             await queryClient.cancelQueries({ queryKey: productKeys.detail(id) })
@@ -155,12 +136,12 @@ export function useUpdateProduct() {
             queryClient.setQueryData<Product[]>(productKeys.list(), (old) => {
                 if (!old) return old
                 return old.map((p) =>
-                    p.id === id ? applyProductPatch(p, data, now) : p
+                    p.id === id ? { ...p, ...data, updatedAt: now } : p
                 )
             })
             queryClient.setQueryData<Product | null>(productKeys.detail(id), (old) => {
                 if (!old) return old
-                return applyProductPatch(old, data, now)
+                return { ...old, ...data, updatedAt: now }
             })
 
             return { previousList, previousDetail }
@@ -177,7 +158,7 @@ export function useUpdateProduct() {
             }
         },
         onSuccess: (_void, variables) => {
-            if (variables.newImageFile) {
+            if (variables.newImageFiles && variables.newImageFiles.length > 0) {
                 void queryClient.invalidateQueries({
                     queryKey: productKeys.detail(variables.id),
                     refetchType: 'active',
@@ -192,8 +173,8 @@ export function useDeleteProduct() {
     const queryClient = useQueryClient()
 
     return useMutation({
-        mutationFn: ({ id, publicId }: { id: string; publicId?: string }) =>
-            deleteProduct(id, publicId),
+        mutationFn: ({ id }: { id: string }) =>
+            deleteProduct(id),
         onMutate: async ({ id }) => {
             await queryClient.cancelQueries({ queryKey: productKeys.lists() })
             await queryClient.cancelQueries({ queryKey: productKeys.detail(id) })

@@ -22,9 +22,9 @@ export function ProductGrid({ products, viewMode = 'grid' }: ProductGridProps) {
                         className="group flex gap-4 rounded-xl border bg-card p-3 transition-shadow hover:shadow-md"
                     >
                         <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-muted">
-                            {product.imageUrl ? (
+                            {product.images?.[0] ? (
                                 <img
-                                    src={product.imageUrl}
+                                    src={product.images[0]}
                                     alt={product.name}
                                     className="h-full w-full transition-transform duration-300 group-hover:scale-105"
                                 />

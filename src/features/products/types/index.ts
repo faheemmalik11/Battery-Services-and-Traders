@@ -1,31 +1,31 @@
+export interface ProductDimensions {
+    length?: number
+    width?: number
+    height?: number
+    weight?: number
+    thickness?: number
+}
+
 export interface Product {
     id: string
     name: string
-    model?: string
     brand: string
+    model: string
+    variant?: string
+
     price: number
     stock: number
+    warranty: number
 
-    imageUrl?: string
-    publicId?: string
+    amperePerHour: number
+    coldCrankingAmperes?: number
+    reserveCapacity?: number
+
+    terminalType?: string
+    dimensions?: ProductDimensions
+
+    images: string[]
     description?: string
-
-    specifications: {
-        voltage: 6 | 12 | 24 | 48
-        batteryType?: string
-        platesPerCell?: number
-        capacity20hr?: number
-        capacity5hr?: number
-        terminalType?: string
-        polarity?: 'L' | 'R'
-        weightKg?: number
-        dimensions?: {
-            length?: number
-            width?: number
-            height?: number
-            containerHeight?: number
-        }
-    }
 
     createdAt: Date
     updatedAt: Date

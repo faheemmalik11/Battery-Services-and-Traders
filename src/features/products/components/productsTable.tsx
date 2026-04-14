@@ -27,7 +27,7 @@ import { Badge } from '@/components/ui/badge'
 
 interface ProductTableProps {
     products: Product[]
-    onDelete: (id: string, publicId?: string) => void
+    onDelete: (id: string) => void
     isDeleting?: boolean
 }
 
@@ -56,9 +56,9 @@ export function ProductTable({ products, onDelete, isDeleting }: ProductTablePro
                     {products.map((product) => (
                         <TableRow key={product.id}>
                             <TableCell>
-                                {product.imageUrl ? (
+                                {product.images?.[0] ? (
                                     <img
-                                        src={product.imageUrl}
+                                        src={product.images[0]}
                                         alt={product.name}
                                         className="h-10 w-10 rounded-md object-cover"
                                     />
@@ -100,8 +100,7 @@ export function ProductTable({ products, onDelete, isDeleting }: ProductTablePro
                                             </AlertDialogHeader>
                                             <AlertDialogFooter>
                                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                <AlertDialogAction onClick={() => onDelete(product.id, product.publicId)} disabled={isDeleting}>
-                                                    {isDeleting ? 'Deleting...' : 'Delete'}
+                                                <AlertDialogAction onClick={() => onDelete(product.id)} disabled={isDeleting}>                                                    {isDeleting ? 'Deleting...' : 'Delete'}
                                                 </AlertDialogAction>
                                             </AlertDialogFooter>
                                         </AlertDialogContent>
