@@ -3,12 +3,12 @@
 import { useProducts } from '@/features/products/hooks/useProducts'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ProductCard } from '@/features/products/components/ProductCard'
+import { ProductGrid } from '@/features/products/components/ProductGrid'
 import { ArrowRight } from 'lucide-react'
 
 export function PopularProducts() {
     const { data: products, isLoading } = useProducts()
-    const popularProducts = products?.slice(0, 3)
+    const popularProducts = products?.slice(0, 5)
 
     if (isLoading) {
         return (
@@ -22,6 +22,10 @@ export function PopularProducts() {
         )
     }
 
+    if (!popularProducts || popularProducts.length === 0) {
+        return null
+    }
+
     return (
         <section className="py-20">
             <div className="container mx-auto px-4">
@@ -33,11 +37,7 @@ export function PopularProducts() {
                         Our best-selling batteries trusted by thousands of customers
                     </p>
                 </div>
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {popularProducts?.map((product) => (
-                        <ProductCard key={product.id} product={product} />
-                    ))}
-                </div>
+                <ProductGrid products={popularProducts} viewMode="grid" />
                 <div className="mt-12 text-center">
                     <Link href="/products">
                         <Button variant="link">

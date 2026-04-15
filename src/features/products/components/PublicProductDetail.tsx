@@ -1,23 +1,23 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { Pencil, ZoomIn } from 'lucide-react'
-import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import {
     Card,
     CardContent,
     CardHeader,
     CardTitle,
 } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Phone, Mail, Minus, Plus } from 'lucide-react'
 import { Product } from '../types'
+import { ContactModal } from '../../contact/components/ContactModal'
 
-interface ProductDetailProps {
+interface PublicProductDetailProps {
     product: Product
 }
 
-function specLine(label: string, value: string | number | undefined | null) {
+function specRow(label: string, value: string | number | undefined | null) {
     if (value === undefined || value === null || value === '') return null
     return (
         <div>
@@ -27,17 +27,19 @@ function specLine(label: string, value: string | number | undefined | null) {
     )
 }
 
-export function ProductDetail({ product }: ProductDetailProps) {
+export function PublicProductDetail({ product }: PublicProductDetailProps) {
     const [selectedImage, setSelectedImage] = useState<string>(product.images?.[0] || '')
     const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 })
     const [isZooming, setIsZooming] = useState(false)
+    const [quantity, setQuantity] = useState<number>(1)
+    const [isModalOpen, setIsModalOpen] = useState(false)
     const imageContainerRef = useRef<HTMLDivElement>(null)
     const images = product.images || []
 
     const getStockBadge = (stock: number) => {
         if (stock === 0) return <Badge variant="destructive">Out of Stock</Badge>
-        if (stock < 10) return <Badge variant="default">Low Stock ({stock})</Badge>
-        return <Badge variant="secondary">In Stock ({stock})</Badge>
+        if (stock < 10) return <Badge variant="default">Low Stock</Badge>
+        return <Badge variant="secondary">In Stock</Badge>
     }
 
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -50,25 +52,21 @@ export function ProductDetail({ product }: ProductDetailProps) {
         setZoomPosition({ x, y })
     }
 
-    return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold">{product.name}</h1>
-                    <p className="text-muted-foreground">
-                        {product.brand}
-                        {product.model ? ` · ${product.model}` : ''}
-                    </p>
-                </div>
-                <Link href={`/cms/products/${product.id}/edit`}>
-                    <Button>
-                        <Pencil className="mr-2 h-4 w-4" />
-                        Edit Product
-                    </Button>
-                </Link>
-            </div>
+    const increaseQuantity = () => {
+        if (quantity < product.stock) {
+            setQuantity(prev => prev + 1)
+        }
+    }
 
-            <div className="grid gap-6 md:grid-cols-2">
+    const decreaseQuantity = () => {
+        if (quantity > 1) {
+            setQuantity(prev => prev - 1)
+        }
+    }
+
+    return (
+        <>
+            <div className="grid gap-8 md:grid-cols-2">
                 {/* Left Column - Images */}
                 <div className="space-y-4">
                     {/* Main Image with Zoom */}
@@ -126,36 +124,71 @@ export function ProductDetail({ product }: ProductDetailProps) {
 
                 {/* Right Column - Details */}
                 <div className="space-y-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Overview</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                {specLine('Model', product.model)}
-                                {specLine('Variant', product.variant)}
-                                <div>
-                                    <p className="text-sm text-muted-foreground">Price</p>
-                                    <p className="font-medium">Rs. {product.price.toLocaleString()}</p>
+                    <div>
+                        <h1 className="text-3xl font-bold">{product.name}</h1>
+                        <p className="mt-1 text-lg text-muted-foreground">
+                            {product.brand}
+                            {product.model ? ` · ${product.model}` : ''}
+                            {product.variant ? ` (${product.variant})` : ''}
+                        </p>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                        <div className="text-3xl font-bold">Rs. {product.price.toLocaleString()}</div>
+                        <div>{getStockBadge(product.stock)}</div>
+                    </div>
+
+                    {/* Quantity Selector */}
+                    {product.stock > 0 && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Quantity</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="flex items-center gap-4">
+                                    <div className="flex items-center rounded-lg border">
+                                        <button
+                                            type="button"
+                                            onClick={decreaseQuantity}
+                                            disabled={quantity <= 1}
+                                            className="px-3 py-2 hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            <Minus className="h-4 w-4" />
+                                        </button>
+                                        <span className="w-12 text-center font-medium">{quantity}</span>
+                                        <button
+                                            type="button"
+                                            onClick={increaseQuantity}
+                                            disabled={quantity >= product.stock}
+                                            className="px-3 py-2 hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            <Plus className="h-4 w-4" />
+                                        </button>
+                                    </div>
+                                    <p className="text-sm text-muted-foreground">
+                                        {product.stock} units available
+                                    </p>
                                 </div>
-                                <div>
-                                    <p className="text-sm text-muted-foreground">Stock</p>
-                                    <div>{getStockBadge(product.stock)}</div>
+                                <div className="mt-4 pt-4 border-t">
+                                    <p className="text-sm text-muted-foreground">Total Price:</p>
+                                    <p className="text-2xl font-bold">
+                                        Rs. {(product.price * quantity).toLocaleString()}
+                                    </p>
                                 </div>
-                            </div>
-                        </CardContent>
-                    </Card>
+                            </CardContent>
+                        </Card>
+                    )}
 
                     <Card>
                         <CardHeader>
                             <CardTitle>Specifications</CardTitle>
                         </CardHeader>
                         <CardContent className="grid grid-cols-2 gap-4">
-                            {specLine('Ampere per hour', product.amperePerHour != null ? `${product.amperePerHour} Ah` : undefined)}
-                            {specLine('Cold cranking amperes', product.coldCrankingAmperes != null ? `${product.coldCrankingAmperes} CCA` : undefined)}
-                            {specLine('Reserve capacity', product.reserveCapacity != null ? `${product.reserveCapacity} min` : undefined)}
-                            {specLine('Warranty', product.warranty != null ? `${product.warranty} months` : undefined)}
-                            {specLine('Terminal type', product.terminalType)}
+                            {specRow('Ampere per hour', product.amperePerHour != null ? `${product.amperePerHour} Ah` : undefined)}
+                            {specRow('Cold cranking amperes', product.coldCrankingAmperes != null ? `${product.coldCrankingAmperes} CCA` : undefined)}
+                            {specRow('Reserve capacity', product.reserveCapacity != null ? `${product.reserveCapacity} min` : undefined)}
+                            {specRow('Warranty', product.warranty != null ? `${product.warranty} months` : undefined)}
+                            {specRow('Terminal type', product.terminalType)}
                             {(product.dimensions?.length != null ||
                                 product.dimensions?.width != null ||
                                 product.dimensions?.height != null ||
@@ -174,7 +207,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
                                         </p>
                                     </div>
                                 )}
-                            {specLine('Weight', product.dimensions?.weight != null ? `${product.dimensions.weight} kg` : undefined)}
+                            {specRow('Weight', product.dimensions?.weight != null ? `${product.dimensions.weight} kg` : undefined)}
                         </CardContent>
                     </Card>
 
@@ -188,8 +221,47 @@ export function ProductDetail({ product }: ProductDetailProps) {
                             </CardContent>
                         </Card>
                     )}
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Contact Us</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <p className="text-sm text-muted-foreground">
+                                Interested in this product? Contact us for more information or to place an order.
+                            </p>
+                            <div className="flex gap-4">
+                                <a href="tel:+923001234567" className="flex-1">
+                                    <Button className="w-full">
+                                        <Phone className="mr-2 h-4 w-4" />
+                                        Call Now
+                                    </Button>
+                                </a>
+
+                                <Button
+                                    variant="outline"
+                                    className="flex-1"
+                                    onClick={() => setIsModalOpen(true)}
+                                >
+                                    <Mail className="mr-2 h-4 w-4" />
+                                    Email Us
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
                 </div>
             </div>
-        </div>
+
+            {/* Contact Modal */}
+            <ContactModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                productName={product.name}
+                productBrand={product.brand}
+                productModel={product.model}
+                productVariant={product.variant}
+                defaultQuantity={quantity}
+            />
+        </>
     )
 }
