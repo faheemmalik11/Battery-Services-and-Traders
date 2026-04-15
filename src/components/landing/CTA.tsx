@@ -30,7 +30,7 @@ export function CTA() {
                             <h3 className="text-xl font-semibold">Emergency Support</h3>
                             <div className="flex items-center gap-3">
                                 <Phone className="h-5 w-5" />
-                                <span>+1 (555) 123-4567</span>
+                                <span>+92 310 4528450</span>
                             </div>
                             <div className="flex items-center gap-3">
                                 <Mail className="h-5 w-5" />

@@ -231,7 +231,7 @@ export function PublicProductDetail({ product }: PublicProductDetailProps) {
                                 Interested in this product? Contact us for more information or to place an order.
                             </p>
                             <div className="flex gap-4">
-                                <a href="tel:+923001234567" className="flex-1">
+                                <a href="tel:+923104528450" className="flex-1">
                                     <Button className="w-full">
                                         <Phone className="mr-2 h-4 w-4" />
                                         Call Now
