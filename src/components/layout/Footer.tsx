@@ -23,7 +23,7 @@ export function Footer() {
                     <div>
                         <h4 className="mb-3 font-medium">Contact</h4>
                         <p className="text-sm text-muted-foreground">Email: info@batteryservices.com</p>
-                        <p className="text-sm text-muted-foreground">Phone: +1 (555) 123-4567</p>
+                        <p className="text-sm text-muted-foreground">Phone: +92 310 4528450</p>
                     </div>
                 </div>
 

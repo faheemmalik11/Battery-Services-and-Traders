@@ -125,7 +125,7 @@ export function ContactModal({
                                 <FormItem>
                                     <FormLabel>Phone Number</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="+1 234 567 8900" {...field} />
+                                        <Input placeholder="+92 304 568900" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
